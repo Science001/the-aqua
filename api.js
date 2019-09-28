@@ -35,14 +35,15 @@ function fallback (agent) {
 }
 
 function get_time(agent) {
-    pool.query('select now()', (err, result) => {
-        if(err) {
-            agent.add("Something's wrong")
-        }
-        else {
-            agent.add(`The current time is ${result.rows[0].now}`)
-        }
-    })
+    // pool.query('select now()', (err, result) => {
+    //     if(err) {
+    //         agent.add("Something's wrong")
+    //     }
+    //     else {
+    //         agent.add(`The current time is ${result.rows[0].now}`)
+    //     }
+    // })
+    agent.add("The time is 12.00")
 }
 
 function WebhookProcessing(req, res) {
