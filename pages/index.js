@@ -10,6 +10,7 @@ import SwipeableViews from 'react-swipeable-views';
 import { VictoryChart, VictoryBar, VictoryTheme, VictoryAxis } from 'victory'
 
 import axios from 'axios'
+import { socket } from '../socket'
 
 class App extends React.Component {
   constructor(props) {
@@ -45,40 +46,41 @@ class App extends React.Component {
           temperature: res.data.temperature,
           humidity: res.data.humidity,
           hcho: res.data.hcho,
+          toluene: res.data.toluene,
+          benzol: res.data.benzol,
         })
       })
-    setInterval(() => {
-      axios.get('/api/recent-values')
-        .then((res) => {
-          var aqi = res.data.aqi
-          if (aqi > 500) aqi = 500
-          this.setState({
-            aqi: aqi,
-            temperature: res.data.temperature,
-            humidity: res.data.humidity,
-            hcho: res.data.hcho,
-          })
+    socket.on('new-data', data => {
+      console.log(data)
+      var aqi = data.newData.aqi
+        if (aqi > 500) aqi = 500
+        this.setState({
+          aqi: aqi,
+          temperature: data.newData.temperature,
+          humidity: data.newData.humidity,
+          hcho: data.newData.hcho,
+          toluene: data.newData.toluene,
+          benzol: data.newData.benzol,
         })
-    }, 60000)
+    })
   }
 
   getBarColor = (data) => {
-    console.log(data)
-    if(data.datum.aqi > 300) return '#7E0023'
-    else if(data.datum.aqi > 200) return '#8F3F97'
-    else if(data.datum.aqi > 150) return '#FF0000'
-    else if(data.datum.aqi > 100) return '#FF7E00'
-    else if(data.datum.aqi > 50) return '#FEC007'
+    if (data.datum.aqi > 300) return '#7E0023'
+    else if (data.datum.aqi > 200) return '#8F3F97'
+    else if (data.datum.aqi > 150) return '#FF0000'
+    else if (data.datum.aqi > 100) return '#FF7E00'
+    else if (data.datum.aqi > 50) return '#FEC007'
     else return '#00E400'
   }
 
   getAQStatus = () => {
     var aqi = this.state.aqi
-    if(aqi > 300) return 'Hazardous'
-    else if(aqi > 200) return 'Very Unhealthy'
-    else if(aqi > 150) return 'Unhealthy'
-    else if(aqi > 100) return 'Unhealthy for Sensitive Groups'
-    else if(aqi > 50) return 'Moderate'
+    if (aqi > 300) return 'Hazardous'
+    else if (aqi > 200) return 'Very Unhealthy'
+    else if (aqi > 150) return 'Unhealthy'
+    else if (aqi > 100) return 'Unhealthy for Sensitive Groups'
+    else if (aqi > 50) return 'Moderate'
     else return 'Good'
   }
 
@@ -102,12 +104,12 @@ class App extends React.Component {
         <SwipeableViews enableMouseEvents id="carousel" style={{ width: "100%", backgroundColor: "#ededed" }}>
           <div className="carouselUnit">
             <div id="meterChart">
-              <ReactSpeedometer minValue={0} maxValue={500} customSegmentStops={[0, 50, 100, 150, 200, 300, 500]} value={this.state.aqi < 500 ? this.state.aqi : 500} segmentColors={["#00E400", "#FEC007", "#FF7E00", "#FF0000", "#8F3F97", "#7E0023"]}/>
+              <ReactSpeedometer minValue={0} maxValue={500} customSegmentStops={[0, 50, 100, 150, 200, 300, 500]} value={this.state.aqi < 500 ? this.state.aqi : 500} segmentColors={["#00E400", "#FEC007", "#FF7E00", "#FF0000", "#8F3F97", "#7E0023"]} />
             </div>
             <Typography style={{ marginBottom: 15, marginTop: 15 }}>Current Air Quality</Typography>
             <Typography style={{ marginBottom: 15, marginTop: 15 }}>{this.getAQStatus()}</Typography>
             <hr color="white" width="80%" />
-            <Typography style={{ marginBottom: 15, marginTop: 15 }}>{`Temperature: ${this.state.temperature}\u00b0F`}</Typography>
+            <Typography style={{ marginBottom: 15, marginTop: 15 }}>{`Temperature: ${this.state.temperature}\u00b0C`}</Typography>
             <Typography style={{ marginBottom: 15, marginTop: 15 }}>{`Humidity: ${this.state.humidity}%`}</Typography>
           </div>
           <div className="carouselUnit">

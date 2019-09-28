@@ -12,6 +12,8 @@ app.prepare()
   .then(() => {
     // Initialize --------------------------------------------------------------------
     const server = express()
+    const httpServer = require('http').Server(server)
+    const io = require('socket.io')(httpServer)
     require('dotenv').config()
     server.use(morgan('dev'))
     server.use(session({
@@ -24,13 +26,20 @@ app.prepare()
     const port = process.env.PORT
     // -------------------------------------------------------------------------------
 
-    server.use('/api', require('./api'))
+    server.use('/api', (req, _res, next) => {
+      req.io = io
+      next()
+    }, require('./api'))
+
+    io.on('connection', _socket => {
+      console.log("New Connection to Socket")
+    })
 
     server.get('*', (req, res) => {
       return handle(req, res)
     })
 
-    server.listen(port, (err) => {
+    httpServer.listen(port, (err) => {
       if (err) throw err
       console.log(`> Ready on port ${port}`)
     })
@@ -38,4 +47,4 @@ app.prepare()
   .catch((ex) => {
     console.error(ex.stack)
     process.exit(1)
-  })
+  })  
