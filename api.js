@@ -1,12 +1,12 @@
 const express = require("express");
 const api = express.Router();
 const crypto = require('crypto');
-const {WebhookClient} = require('dialogflow-fulfillment');
+const { WebhookClient } = require('dialogflow-fulfillment');
 
 //Body Parser ------------------------------------------------
 const bodyParser = require('body-parser')
 api.use(bodyParser.json())
-api.use(bodyParser.urlencoded({extended: true}));
+api.use(bodyParser.urlencoded({ extended: true }));
 //------------------------------------------------------------
 
 //Database ---------------------------------------------------
@@ -26,28 +26,31 @@ function hash(input, salt) {
     return ["pdkdf2", "10000", salt, hashed.toString('hex')].join('$');
 }
 
-function welcome (agent) {
+function welcome(agent) {
     agent.add(`Welcome to Express.JS webhook!`);
 }
 
-function fallback (agent) {
+function fallback(agent) {
     agent.add(`I didn't understand`);
 }
 
 function get_time(agent) {
-    // pool.query('select now()', (err, result) => {
-    //     if(err) {
-    //         agent.add("Something's wrong")
-    //     }
-    //     else {
-    //         agent.add(`The current time is ${result.rows[0].now}`)
-    //     }
-    // })
-    agent.add("The time is 12.00")
+    return new Promise((resolve, _reject) => {
+        pool.query('select now()', (err, result) => {
+            if (err) {
+                agent.add("Something's wrong")
+                resolve()
+            }
+            else {
+                agent.add(`The current time is ${result.rows[0].now}`)
+                resolve()
+            }
+        })
+    })
 }
 
 function WebhookProcessing(req, res) {
-    const agent = new WebhookClient({request: req, response: res});
+    const agent = new WebhookClient({ request: req, response: res });
     console.info(`agent set`);
 
     let intentMap = new Map();
@@ -77,7 +80,7 @@ api.get('/all-sensor-data', (req, res) => {
 
 api.post('/sensor-data', (req, res, next) => {
     var { temperature, humidity, hcho, aqi } = req.body
-    if(!temperature || !humidity || !hcho || !aqi) {
+    if (!temperature || !humidity || !hcho || !aqi) {
         res.status(400).send("Not all expected data was sent")
     }
     else next()
