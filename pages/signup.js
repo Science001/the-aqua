@@ -1,1 +1,5 @@
-export default () => (<p>Signup Page</p>)
+export default function SignUp() {
+    return(
+        <p>{"Signup Page"}</p>
+    )
+}

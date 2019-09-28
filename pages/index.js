@@ -1,1 +1,5 @@
-export default () => (<p>The Aqua's Squad application</p>)
+export default function App() {
+    return(
+        <p>{"The Aqua Squad's Application"}</p>
+    )
+}
