@@ -7,7 +7,7 @@ import Button from '@material-ui/core/Button';
 import MenuIcon from '@material-ui/icons/Menu';
 import ReactSpeedometer from "react-d3-speedometer"
 import SwipeableViews from 'react-swipeable-views';
-import { VictoryChart, VictoryLine, VictoryTheme } from 'victory'
+import { VictoryChart, VictoryBar, VictoryTheme, VictoryAxis } from 'victory'
 
 import axios from 'axios'
 
@@ -19,19 +19,17 @@ class App extends React.Component {
       temperature: '-',
       humidity: '-',
       dataHistory: [
-        { aqi: 150, time: '06' },
-        { aqi: 160, time: '07' },
-        { aqi: 170, time: '08' },
-        { aqi: 200, time: '09' },
-        { aqi: 180, time: '10' },
-        { aqi: 160, time: '11' },
-        { aqi: 130, time: '12' },
-        { aqi: 140, time: '13' },
-        { aqi: 150, time: '14' },
-        { aqi: 180, time: '15' },
-        { aqi: 210, time: '16' },
-        { aqi: 180, time: '17' },
-        { aqi: 165, time: '18' },
+        { aqi: 50, time: '06' },
+        { aqi: 60, time: '07' },
+        { aqi: 70, time: '08' },
+        { aqi: 100, time: '09' },
+        { aqi: 152, time: '10' },
+        { aqi: 90, time: '11' },
+        { aqi: 80, time: '12' },
+        { aqi: 50, time: '13' },
+        { aqi: 50, time: '14' },
+        { aqi: 40, time: '15' },
+        { aqi: 60, time: '16' },
       ]
     }
   }
@@ -52,6 +50,7 @@ class App extends React.Component {
         .then((res) => {
           var hcho = res.data.hcho
           var aqi = (hcho / 4) * 500
+          if (aqi > 500) aqi = 500
           this.setState({
             aqi: aqi,
             temperature: res.data.temperature,
@@ -59,6 +58,26 @@ class App extends React.Component {
           })
         })
     }, 60000)
+  }
+
+  getBarColor = (data) => {
+    console.log(data)
+    if(data.datum.aqi > 300) return '#7E0023'
+    else if(data.datum.aqi > 200) return '#8F3F97'
+    else if(data.datum.aqi > 150) return '#FF0000'
+    else if(data.datum.aqi > 100) return '#FF7E00'
+    else if(data.datum.aqi > 50) return '#FEC007'
+    else return '#00E400'
+  }
+
+  getAQStatus = () => {
+    var aqi = this.state.aqi
+    if(aqi > 300) return 'Hazardous'
+    else if(aqi > 200) return 'Very Unhealthy'
+    else if(aqi > 150) return 'Unhealthy'
+    else if(aqi > 100) return 'Unhealthy for Sensitive Groups'
+    else if(aqi > 50) return 'Moderate'
+    else return 'Good'
   }
 
   render() {
@@ -81,9 +100,10 @@ class App extends React.Component {
         <SwipeableViews enableMouseEvents id="carousel" style={{ width: "100%", backgroundColor: "#ededed" }}>
           <div className="carouselUnit">
             <div id="meterChart">
-              <ReactSpeedometer minvalue={0} maxValue={500} value={this.state.aqi < 500 ? this.state.aqi : 500} startColor="#00E400" endColor="#FF0000" />
+              <ReactSpeedometer minValue={0} maxValue={500} customSegmentStops={[0, 50, 100, 150, 200, 300, 500]} value={this.state.aqi < 500 ? this.state.aqi : 500} segmentColors={["#00E400", "#FEC007", "#FF7E00", "#FF0000", "#8F3F97", "#7E0023"]}/>
             </div>
             <Typography style={{ marginBottom: 15, marginTop: 15 }}>Current Air Quality</Typography>
+            <Typography style={{ marginBottom: 15, marginTop: 15 }}>{this.getAQStatus()}</Typography>
             <hr color="white" width="80%" />
             <Typography style={{ marginBottom: 15, marginTop: 15 }}>{`Temperature: ${this.state.temperature}\u00b0F`}</Typography>
             <Typography style={{ marginBottom: 15, marginTop: 15 }}>{`Humidity: ${this.state.humidity}%`}</Typography>
@@ -92,19 +112,19 @@ class App extends React.Component {
             <div id="lineChart">
               <VictoryChart
                 theme={VictoryTheme.material}
+                domainPadding={20}
               >
-                <VictoryLine
-                  style={{
-                    data: { stroke: "#c43a31" },
-                    parent: { border: "1px solid #ccc" }
-                  }}
+                <VictoryAxis dependentAxis />
+                <VictoryAxis />
+                <VictoryBar
+                  style={{ data: { fill: this.getBarColor } }}
                   data={this.state.dataHistory}
                   x="time"
                   y="aqi"
                 />
               </VictoryChart>
             </div>
-            <Typography style={{ marginBottom: 30 }}>Today</Typography>
+            <Typography style={{ marginBottom: 30 }}>Hourly Air Quality</Typography>
           </div>
         </SwipeableViews>
         <style jsx>{`
@@ -120,13 +140,13 @@ class App extends React.Component {
             flex-direction: column;
             justify-content: center;
             align-items: center;
+            padding: 15px;
           }
           #lineChart {
             width: 30%;
           }
           #meterChart {
             height: 200px !important;
-            margin-top: 60px;
           }
           hr {
             border: 0; 
