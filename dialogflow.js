@@ -4,8 +4,8 @@ const { WebhookClient } = require('dialogflow-fulfillment');
 
 //Body Parser ------------------------------------------------
 const bodyParser = require('body-parser')
-api.use(bodyParser.json())
-api.use(bodyParser.urlencoded({ extended: true }));
+dialogflow.use(bodyParser.json())
+dialogflow.use(bodyParser.urlencoded({ extended: true }));
 //------------------------------------------------------------
 
 //Database ---------------------------------------------------
