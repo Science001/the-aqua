@@ -43,15 +43,15 @@ api.get('/all-sensor-data', (req, res) => {
 })
 
 api.post('/sensor-data', (req, res, next) => {
-    var { temperature, humidity, hcho } = req.body
-    if(!temperature || !humidity || !hcho) {
+    var { temperature, humidity, hcho, aqi } = req.body
+    if(!temperature || !humidity || !hcho || !aqi) {
         res.status(400).send("Not all expected data was sent")
     }
     else next()
 }, (req, res) => {
     console.log("SENSOR DATA:", req.body)
-    var { temperature, humidity, hcho } = req.body
-    pool.query("insert into sensor_data(hcho, temperature, humidity) values ($1, $2, $3)", [hcho, temperature, humidity], (err, _) => {
+    var { temperature, humidity, hcho, aqi } = req.body
+    pool.query("insert into sensor_data(hcho, temperature, humidity, aqi) values ($1, $2, $3, $4)", [hcho, temperature, humidity, aqi], (err, _) => {
         if (err) {
             console.log("Error inserting sensor data: ", err)
             res.status(500).send(err)
