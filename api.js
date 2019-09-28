@@ -105,7 +105,7 @@ api.get('/recent-values', (req, res) => {
     })
 })
 
-app.post('/dialogflow', function (req, res) {
+api.post('/dialogflow', function (req, res) {
     console.info(`\n\n>>>>>>> S E R V E R   H I T <<<<<<<`);
     WebhookProcessing(req, res);
 });
