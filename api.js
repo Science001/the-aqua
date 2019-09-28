@@ -30,7 +30,7 @@ api.get('/', (req, res) => {
     res.send({ message: "Team 13, FTW!" })
 })
 
-api.get('/sensor-data', (req, res) => {
+api.get('/all-sensor-data', (req, res) => {
     pool.query("select * from sensor_data", (err, result) => {
         if (err) {
             console.log("Error getting sensor data: ", err)
@@ -58,6 +58,18 @@ api.post('/sensor-data', (req, res, next) => {
         }
         else {
             res.send("INSERTED INTO DB")
+        }
+    })
+})
+
+api.get('/recent-values', (req, res) => {
+    pool.query("select * from sensor_data order by sent_on desc limit 1", (err, result) => {
+        if (err) {
+            console.log("Error getting sensor data: ", err)
+            res.status(500).send(err)
+        }
+        else {
+            res.send(result.rows[0])
         }
     })
 })
