@@ -5,6 +5,7 @@ const crypto = require('crypto')
 //Body Parser ------------------------------------------------
 const bodyParser = require('body-parser')
 api.use(bodyParser.json())
+api.use(bodyParser.urlencoded({extended: true}));
 //------------------------------------------------------------
 
 //Database ---------------------------------------------------
@@ -22,6 +23,36 @@ const pool = new Pool({
 function hash(input, salt) {
     var hashed = crypto.pbkdf2Sync(input, salt, 10000, 512, 'sha512');
     return ["pdkdf2", "10000", salt, hashed.toString('hex')].join('$');
+}
+
+function welcome (agent) {
+    agent.add(`Welcome to Express.JS webhook!`);
+}
+
+function fallback (agent) {
+    agent.add(`I didn't understand`);
+}
+
+function get_time(agent) {
+    pool.query('select now()', (err, result) => {
+        if(err) {
+            agent.add("Something's wrong")
+        }
+        else {
+            agent.add(`The current time is ${result.rows[0].now}`)
+        }
+    })
+}
+
+function WebhookProcessing(req, res) {
+    const agent = new WebhookClient({request: req, response: res});
+    console.info(`agent set`);
+
+    let intentMap = new Map();
+    intentMap.set('Default Welcome Intent', welcome);
+    intentMap.set('Default Fallback Intent', fallback);
+    intentMap.set('get_time', get_time);
+    agent.handleRequest(intentMap);
 }
 // -------------------------------------------------------------------------------
 
@@ -73,5 +104,10 @@ api.get('/recent-values', (req, res) => {
         }
     })
 })
+
+app.post('/dialogflow', function (req, res) {
+    console.info(`\n\n>>>>>>> S E R V E R   H I T <<<<<<<`);
+    WebhookProcessing(req, res);
+});
 
 module.exports = api;
