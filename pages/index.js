@@ -1,0 +1,1 @@
+export default () => (<p>The Aqua's Squad application</p>)
