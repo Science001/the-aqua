@@ -26,12 +26,54 @@ function hash(input, salt) {
     return ["pdkdf2", "10000", salt, hashed.toString('hex')].join('$');
 }
 
+function getAQStatus(aqi) {
+    if (aqi > 300) return 'Hazardous'
+    else if (aqi > 200) return 'Very Unhealthy'
+    else if (aqi > 150) return 'Unhealthy'
+    else if (aqi > 100) return 'Unhealthy for Sensitive Groups'
+    else if (aqi > 50) return 'Moderate'
+    else return 'Good'
+}
+// -------------------------------------------------------------------------------
+
+// DialogFlow Helpers -----------------------------------------------------------------------
 function welcome(agent) {
     agent.add(`Welcome to Express.JS webhook!`);
 }
 
 function fallback(agent) {
     agent.add(`I didn't understand`);
+}
+
+function get_info_aqi(agent) {
+    return new Promise((resolve, _reject) => {
+        pool.query('select aqi from sensor_data order by sent_on desc limit 1', (err, result) => {
+            if (err) {
+                agent.add("Something's wrong")
+                resolve()
+            }
+            else {
+                agent.add(`The air quality is ${getAQStatus(result.rows[0].aqi)}. The AQI is ${result.rows[0].aqi}.`)
+                resolve()
+            }
+        })
+    })
+}
+
+function get_info_exposure(agent) {
+    return new Promise((resolve, _reject) => {
+        pool.query('with e as (select aqi from sensor_data order by sent_on desc limit 100) select count(*) from e where e.aqi>50', (err, result) => {
+            if (err) {
+                agent.add("Something's wrong")
+                resolve()
+            }
+            else {
+                var hit = (result.rows[0].count) - 50
+                agent.add(`Your have been exposed ${Math.abs(hit)}% ${hit < 0 ? 'less' : 'more'} to pollution than optimal.`)
+                resolve()
+            }
+        })
+    })
 }
 
 function get_time(agent) {
@@ -57,6 +99,8 @@ function WebhookProcessing(req, res) {
     intentMap.set('Default Welcome Intent', welcome);
     intentMap.set('Default Fallback Intent', fallback);
     intentMap.set('get_time', get_time);
+    intentMap.set('get_info_aqi', get_info_aqi);
+    intentMap.set('get_info_exposure', get_info_exposure);
     agent.handleRequest(intentMap);
 }
 // -------------------------------------------------------------------------------
