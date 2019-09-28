@@ -16,6 +16,7 @@ class App extends React.Component {
     super(props)
     this.state = {
       aqi: 0,
+      hcho: 0,
       temperature: '-',
       humidity: '-',
       dataHistory: [
@@ -37,24 +38,25 @@ class App extends React.Component {
   componentDidMount() {
     axios.get('/api/recent-values')
       .then((res) => {
-        var hcho = res.data.hcho
-        var aqi = (hcho / 4) * 500
+        var aqi = res.data.aqi
+        if (aqi > 500) aqi = 500
         this.setState({
           aqi: aqi,
           temperature: res.data.temperature,
           humidity: res.data.humidity,
+          hcho: res.data.hcho,
         })
       })
     setInterval(() => {
       axios.get('/api/recent-values')
         .then((res) => {
-          var hcho = res.data.hcho
-          var aqi = (hcho / 4) * 500
+          var aqi = res.data.aqi
           if (aqi > 500) aqi = 500
           this.setState({
             aqi: aqi,
             temperature: res.data.temperature,
             humidity: res.data.humidity,
+            hcho: res.data.hcho,
           })
         })
     }, 60000)
