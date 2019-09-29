@@ -123,6 +123,18 @@ api.post('/get-plant', (req, res) => {
   }
 })
 
+api.get('/leaderboard', (req, res) => {
+  pool.query('select * from rankings', (err, result) => {
+    if (err) {  
+      res.status(500).send({ message: "Something went wrong" })
+      console.log(err)
+    }
+    else {
+      res.send(result.rows)
+    }
+  })
+})
+
 api.use('/dialogflow', require('./dialogflow'))
 
 module.exports = api;

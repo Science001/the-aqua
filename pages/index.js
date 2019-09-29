@@ -4,6 +4,10 @@ import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
 import IconButton from '@material-ui/core/IconButton';
 import Button from '@material-ui/core/Button';
+import Drawer from '@material-ui/core/Drawer';
+import List from '@material-ui/core/List';
+import ListItem from '@material-ui/core/ListItem';
+import Divider from '@material-ui/core/Divider';
 import MenuIcon from '@material-ui/icons/Menu';
 import ReactSpeedometer from "react-d3-speedometer"
 import SwipeableViews from 'react-swipeable-views';
@@ -21,6 +25,7 @@ class App extends React.Component {
   constructor(props) {
     super(props)
     this.state = {
+      drawerOpen: false,
       aqi: 0,
       hcho: 0,
       temperature: '-',
@@ -107,6 +112,16 @@ class App extends React.Component {
     else return 'Good'
   }
 
+  getBorderColor = () => {
+    var aqi = this.state.aqi
+    if (aqi > 300) return '#7E0023'
+    else if (aqi > 200) return '#8F3F97'
+    else if (aqi > 150) return '#FF0000'
+    else if (aqi > 100) return '#FF7E00'
+    else if (aqi > 50) return '#FEC007'
+    else return '#00E400'
+  }
+
   getPlant = (body) => {
     this.setState({
       requestOnProcess: true,
@@ -128,6 +143,11 @@ class App extends React.Component {
       })
   }
 
+  handleDrawerToggle = () => {
+    console.log('click')
+    this.setState(state => ({ drawerOpen: !state.drawerOpen }));
+  };
+
   render() {
     if (this.state.initialRequestOnProcess) {
       return (
@@ -137,6 +157,31 @@ class App extends React.Component {
       )
     }
     else {
+      const drawer = (
+        <List style={{ width: 200 }}>
+          <ListItem>
+            <Link href='/'>
+              <Typography variant="h5">{"AQUA"}</Typography>
+            </Link>
+          </ListItem>
+          <Divider />
+          <ListItem>
+            <Link href='/'>
+              <Typography>{"Dashboard"}</Typography>
+            </Link>
+          </ListItem>
+          <ListItem>
+            <Link href='/chatbot'>
+              <Typography>{"Chatbot"}</Typography>
+            </Link>
+          </ListItem>
+          <ListItem>
+            <Link href='/leaderboard'>
+              <Typography>{"Leaderboard"}</Typography>
+            </Link>
+          </ListItem>
+        </List>
+      )
       return (
         <div className="wrapper">
           <AppBar>
@@ -151,19 +196,34 @@ class App extends React.Component {
               <Typography variant="h6" color="inherit" style={{ flexGrow: 1 }} noWrap>
                 {"AQUA"}
               </Typography>
-              <Link href="/leaderboard"><Button variant="outlined" style={{ borderColor: 'white', color: 'white' }}>Leaderboard</Button></Link>
+              <img src="/static/images/apollo.png" width={"10%"} height={"10%"} />
             </Toolbar>
           </AppBar>
+          <Drawer
+            variant="temporary"
+            open={this.state.drawerOpen}
+            onClose={this.handleDrawerToggle}
+            ModalProps={{
+              keepMounted: true
+            }}
+          >
+            {drawer}
+          </Drawer>
           <SwipeableViews enableMouseEvents id="carousel" style={{ width: "100%", backgroundColor: "#ededed", marginBottom: 20 }}>
             <div className="carouselUnit">
+              <Typography variant="overline" style={{ marginBottom: 15, marginTop: 15 }}>{"Maternity Ward"}</Typography>
               <div id="meterChart">
                 <ReactSpeedometer minValue={0} maxValue={500} customSegmentStops={[0, 50, 100, 150, 200, 300, 500]} value={Number(this.state.aqi) < 500 ? Number(this.state.aqi) : 500} segmentColors={["#00E400", "#FEC007", "#FF7E00", "#FF0000", "#8F3F97", "#7E0023"]} />
               </div>
-              <Typography style={{ marginBottom: 15, marginTop: 15 }}>Current Air Quality</Typography>
-              <Typography style={{ marginBottom: 15, marginTop: 15 }}>{this.getAQStatus()}</Typography>
-              <hr color="white" width="80%" />
-              <Typography style={{ marginBottom: 15, marginTop: 15 }}>{`Temperature: ${this.state.temperature}\u00b0C`}</Typography>
-              <Typography style={{ marginBottom: 15, marginTop: 15 }}>{`Humidity: ${this.state.humidity}%`}</Typography>
+              <Typography style={{ marginBottom: 15, marginTop: 15 }}><b>Current Air Quality</b></Typography>
+              <img src="/static/images/Legend.png" width="100%" height="100px" />
+              <hr color="white" width="90%" />
+              <div style={{ display: 'flex', flexDirection: 'row', justifyContent: "space-between", width: "100%" }}>
+                <Typography style={{ margin: 15 }}>{`Temperature: ${this.state.temperature}\u00b0C`}</Typography>
+                <Typography style={{ margin: 15 }}>{`Humidity: ${this.state.humidity}%`}</Typography>
+              </div>
+              <hr color="white" width="90%" />
+              <Typography style={{ padding: 15, borderRadius: 3, border: '1px solid #000000', marginBottom: 15, marginTop: 15, backgroundColor: this.getBorderColor(), boxShadow: '0 0 5px 0 #e3e3e3' }}>{this.getAQStatus()}</Typography>
             </div>
             <div className="carouselUnit">
               <div id="lineChart">
@@ -171,24 +231,8 @@ class App extends React.Component {
                   theme={VictoryTheme.material}
                   domainPadding={20}
                 >
-                  {/* <VictoryLegend x={0} y={0}
-                    title="Legend"
-                    centerTitle
-                    orientation="vertical"
-                    gutter={20}           
-                    width={30}
-                    style={{ border: { stroke: "black" }, title: { fontSize: 20 } }}
-                    data={[
-                      { name: "Good", symbol: { fill: "#00E400" } },
-                      { name: "Moderate", symbol: { fill: "#FEC007" } },
-                      { name: "Unhealthy for Sensitive Groups", symbol: { fill: "#FF7E00" } },
-                      { name: "Unhealthy", symbol: { fill: "#FF0000" } },
-                      { name: "Very Unhealthy", symbol: { fill: "#8F3F97" } },
-                      { name: "Hazardous", symbol: { fill: "#7E0023" } },
-                    ]}
-                  /> */}
-                  <VictoryAxis dependentAxis label="AQI"/>
-                  <VictoryAxis label="Time"/>
+                  <VictoryAxis dependentAxis label="AQI" />
+                  <VictoryAxis label="Time" />
                   <VictoryBar
                     style={{ data: { fill: this.getBarColor } }}
                     data={this.state.dataHistory}
@@ -198,9 +242,12 @@ class App extends React.Component {
                 </VictoryChart>
               </div>
               <Typography style={{ marginBottom: 30 }}>Hourly Air Quality</Typography>
+              <hr color="white" width="90%" />
+              <Typography style={{ margin: 15 }}>{`HCHO: ${this.state.hcho} ppm`}</Typography>
+              <Typography style={{ margin: 15 }}>{`Benzol: ${this.state.benzol} ppm`}</Typography>
+              <Typography style={{ margin: 15 }}>{`Toluene: ${this.state.toluene} ppm`}</Typography>
             </div>
           </SwipeableViews>
-          <Link href="/chatbot"><Button variant="contained" color="primary" fullWidth style={{marginBottom: '20px'}}>CHAT WITH THE BOT</Button></Link>
           {this.state.requestOnProcess ? <CircularProgress color="primary" /> : this.state.gotSuggestion ?
             <Suggestions plant={this.state.suggestedPlant} /> :
             this.state.aqi > 50 ?
@@ -227,7 +274,7 @@ class App extends React.Component {
           }
           #meterChart {
             marginTop: 30px;
-            height: 200px !important;
+            height: 175px !important;
           }
           hr {
             border: 0; 

@@ -4,18 +4,19 @@ import Typography from '@material-ui/core/Typography'
 import Button from '@material-ui/core/Button'
 
 import axios from 'axios'
+import { attach } from 'actions-on-google/dist/assistant'
 
 class Questionnaire extends React.Component {
     constructor(props) {
         super(props)
         this.state = {
-            headache: null,
-            nausea: null,
-            dizziness: null,
-            tightnessInChest: null,
-            noseIrritation: null,
-            throatIrritation: null,
-            shortnessOfBreath: null,
+            headache: Math.floor((Math.random() * (25-3))+3),
+            nausea: Math.floor((Math.random() * (25-3))+3),
+            dizziness: Math.floor((Math.random() * (25-3))+3),
+            tightnessInChest: Math.floor((Math.random() * (25-3))+3),
+            noseIrritation: Math.floor((Math.random() * (50-3))+3),
+            throatIrritation: Math.floor((Math.random() * (50-3))+3),
+            shortnessOfBreath: Math.floor((Math.random() * (25-3))+3),
         }
     }
 

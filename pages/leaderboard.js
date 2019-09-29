@@ -1,144 +1,156 @@
-export default () => {
-    return (
-        <div class="container">
-            <header>
-                <center><h1>GLOBAL RANKINGS</h1></center>
-            </header>
-            <div class="wrapper">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Rank</th>
-                            <th>Hospital</th>
-                            <th>Points</th>
-                            <th>+/-</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td class="rank">1</td>
-                            <td class="team">AIIMS</td>
-                            <td class="points">1460</td>
-                            <td class="up-down">0</td>
-                        </tr>
-                        <tr>
-                            <td class="rank">2</td>
-                            <td class="team">CMC</td>
-                            <td class="points">1340</td>
-                            <td class="up-down">0</td>
-                        </tr>
-                        <tr>
-                            <td class="rank">3</td>
-                            <td class="team">Apollo Hospitals</td>
-                            <td class="points">1245</td>
-                            <td class="up-down">0</td>
-                        </tr>
-                        <tr>
-                            <td class="rank">4</td>
-                            <td class="team">Fortis Hospitals</td>
-                            <td class="points">1210</td>
-                            <td class="up-down">+2</td>
-                        </tr>
-                        <tr>
-                            <td class="rank">5</td>
-                            <td class="team">NIMHANS</td>
-                            <td class="points">1186</td>
-                            <td class="up-down">-1</td>
-                        </tr>
-                        <tr>
-                            <td class="rank">6</td>
-                            <td class="team">Tata Memorial Hospital</td>
-                            <td class="points">1181</td>
-                            <td class="up-down">-1</td>
-                        </tr>
-                        <tr>
-                            <td class="rank">7</td>
-                            <td class="team">Sankara Nethralaya</td>
-                            <td class="points">1178</td>
-                            <td class="up-down">-1</td>
-                        </tr>
-                        <tr>
-                            <td class="rank">8</td>
-                            <td class="team">PGIMER</td>
-                            <td class="points">1161</td>
-                            <td class="up-down">0</td>
-                        </tr>
-                        <tr>
-                            <td class="rank">9</td>
-                            <td class="team">Sir Ganga Ram Hospital</td>
-                            <td class="points">1115</td>
-                            <td class="up-down">0</td>
-                        </tr>
-                        <tr>
-                            <td class="rank">10</td>
-                            <td class="team">King Edward Memorial Hospital</td>
-                            <td class="points">1082</td>
-                            <td class="up-down">0</td>
-                        </tr>
+import React from 'react'
+import Table from '@material-ui/core/Table'
+import TableRow from '@material-ui/core/TableRow'
+import TableHead from '@material-ui/core/TableHead'
+import TableCell from '@material-ui/core/TableCell'
+import TableBody from '@material-ui/core/TableBody'
+import CircularProgress from '@material-ui/core/CircularProgress'
 
-                    </tbody>
-                </table>
-            </div>
-            <style jsx>{`
-            body {
-                font-family: 'Lato', Arial, sans-serif;
-            }
-            
-            .container > header {
-                margin: 0 auto;
-                padding: 1em;
-                text-align: center;
-            }
-            
-            .container > header h1 {
-                color: dodgerblue;
-              font-weight: 600;
-                font-size: 3em;
-                margin: 0;
-            }
-            
-            .wrapper {
-                line-height: 1.5em;
-                margin: 0 auto;
-                padding: 2em 0 3em;
-                width: 90%;
-                max-width: 2000px;
-                overflow: hidden;
-            }
-            
-            table {
-                border-collapse: collapse;
-                width: 100%;
-                background: #fff;
-            }
-            
-            th {
-                background-color: #326295;
-                font-weight: bold;
-                color: #fff;
-                white-space: nowrap;
-            }
-            
-            td, th {
-                padding: 1em 1.5em;
-                text-align: left;
-            }
-            
-            tbody th {
-                background-color: #2ea879;
-            }
-            tbody tr:nth-child(2n-1) {
-                background-color: #f5f5f5;
-                transition: all .125s ease-in-out;
-            }
-            tbody tr:hover {
-                background-color: rgba(75,101,149,.3);
-            }
-            
-            td.rank {
-                text-transform: capitalize;
-            }
-            `}</style>
+import Drawer from '@material-ui/core/Drawer';
+import List from '@material-ui/core/List';
+import ListItem from '@material-ui/core/ListItem';
+import Divider from '@material-ui/core/Divider';
+import AppBar from '@material-ui/core/AppBar';
+import Toolbar from '@material-ui/core/Toolbar';
+import Typography from '@material-ui/core/Typography';
+import IconButton from '@material-ui/core/IconButton';
+import Link from 'next/link';
+
+import TrendingUp from '@material-ui/icons/TrendingUp'
+import TrendingDown from '@material-ui/icons/TrendingDown'
+import TrendingFlat from '@material-ui/icons/TrendingFlat'
+import MenuIcon from '@material-ui/icons/Menu';
+
+import axios from 'axios'
+
+export default class Leaderboard extends React.Component {
+  constructor(props) {
+    super(props)
+    this.state = {
+      drawerOpen: false,
+      rankings: [],
+      onLoad: true,
+    }
+  }
+
+  componentDidMount() {
+    axios.get('/api/leaderboard')
+      .then((res) => {
+        this.setState({
+          rankings: res.data,
+        })
+      })
+      .catch(err => {
+        console.log(err)
+      })
+      .finally(() => {
+        this.setState({
+          onLoad: false,
+        })
+      })
+  }
+
+  getLogo = val => {
+    if (val === 0) return <TrendingFlat style={{ color: 'grey' }} />
+    else if (val > 0) return <TrendingUp style={{ color: 'green' }} />
+    else return <TrendingDown style={{ color: 'red' }} />
+  }
+
+  handleDrawerToggle = () => {
+    console.log('click')
+    this.setState(state => ({ drawerOpen: !state.drawerOpen }));
+  };
+
+  render() {
+    if (this.state.onLoad) {
+      return (
+        <div style={{ display: "flex", justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+          <CircularProgress color="primary" />
         </div>
-    )
+      )
+    }
+    else {
+      const drawer = (
+        <List style={{ width: 200 }}>
+          <ListItem>
+            <Link href='/'>
+              <Typography variant="h5">{"AQUA"}</Typography>
+            </Link>
+          </ListItem>
+          <Divider />
+          <ListItem>
+            <Link href='/'>
+              <Typography>{"Dashboard"}</Typography>
+            </Link>
+          </ListItem>
+          <ListItem>
+            <Link href='/chatbot'>
+              <Typography>{"Chatbot"}</Typography>
+            </Link>
+          </ListItem>
+          <ListItem>
+            <Link href='/leaderboard'>
+              <Typography>{"Leaderboard"}</Typography>
+            </Link>
+          </ListItem>
+        </List>
+      )
+      return (
+        <div>
+          <AppBar>
+            <Toolbar>
+              <IconButton
+                color="inherit"
+                aria-label="Open drawer"
+                onClick={this.handleDrawerToggle}
+              >
+                <MenuIcon />
+              </IconButton>
+              <Typography variant="h6" color="inherit" style={{ flexGrow: 1 }} noWrap>
+                {"AQUA - Leaderboard"}
+              </Typography>
+              <img src="static/images/aqua grade.png" style={{marginRight: 10}} />
+              <img src="/static/images/apollo.png" width={"10%"} height={"10%"} />
+            </Toolbar>
+          </AppBar>
+          <Drawer
+            variant="temporary"
+            open={this.state.drawerOpen}
+            onClose={this.handleDrawerToggle}
+            ModalProps={{
+              keepMounted: true
+            }}
+          >
+            {drawer}
+          </Drawer>
+          <div style={{ marginTop: 70 }}>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell>{"Rank"}</TableCell>
+                  <TableCell>{"Hospital"}</TableCell>
+                  <TableCell>{"Level"}</TableCell>
+                  <TableCell>{"+/-"}</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {this.state.rankings.map(row => (
+                  <TableRow key={row.rank}>
+                    <TableCell component="th" scope="row">
+                      {row.rank}
+                    </TableCell>
+                    <TableCell>{row.hospital}</TableCell>
+                    <TableCell>
+                      <img src={`/static/images/${row.level}.png`} height="25%" />
+                    </TableCell>
+                    <TableCell>{this.getLogo(row.progress)}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </div>
+      )
+    }
+  }
 }
