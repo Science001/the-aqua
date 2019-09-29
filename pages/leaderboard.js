@@ -136,7 +136,7 @@ export default class Leaderboard extends React.Component {
               </TableHead>
               <TableBody>
                 {this.state.rankings.map(row => (
-                  <TableRow key={row.rank}>
+                  <TableRow key={row.rank} style={row.rank===3?{border: '1px solid green'}:{}}>
                     <TableCell component="th" scope="row">
                       {row.rank}
                     </TableCell>
