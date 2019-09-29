@@ -7,7 +7,12 @@ import Button from '@material-ui/core/Button';
 import MenuIcon from '@material-ui/icons/Menu';
 import ReactSpeedometer from "react-d3-speedometer"
 import SwipeableViews from 'react-swipeable-views';
-import { VictoryChart, VictoryBar, VictoryTheme, VictoryAxis } from 'victory'
+import { VictoryChart, VictoryBar, VictoryTheme, VictoryAxis, VictoryLegend } from 'victory'
+import CircularProgress from '@material-ui/core/CircularProgress';
+import Link from 'next/link';
+
+import Questionnaire from '../components/Questionnaire'
+import Suggestions from '../components/Suggestions'
 
 import axios from 'axios'
 import { socket } from '../socket'
@@ -32,7 +37,11 @@ class App extends React.Component {
         { aqi: 50, time: '14' },
         { aqi: 40, time: '15' },
         { aqi: 60, time: '16' },
-      ]
+      ],
+      gotSuggestion: false,
+      suggestedPlant: null,
+      initialRequestOnProcess: true,
+      requestOnProcess: false,
     }
   }
 
@@ -48,20 +57,34 @@ class App extends React.Component {
           hcho: res.data.hcho,
           toluene: res.data.toluene,
           benzol: res.data.benzol,
+          initialRequestOnProcess: false,
         })
       })
+      .catch(err => {
+        this.setState({
+          initialRequestOnProcess: false,
+        })
+        console.log(err)
+      })
+    // axios.get('/api/hourly-aqi')
+    //   .then(res => {
+    //     console.log(res.data)
+    //     this.setState({
+    //       dataHistory: res.data,
+    //     })
+    //   })
     socket.on('new-data', data => {
       console.log(data)
       var aqi = data.newData.aqi
-        if (aqi > 500) aqi = 500
-        this.setState({
-          aqi: aqi,
-          temperature: data.newData.temperature,
-          humidity: data.newData.humidity,
-          hcho: data.newData.hcho,
-          toluene: data.newData.toluene,
-          benzol: data.newData.benzol,
-        })
+      if (aqi > 500) aqi = 500
+      this.setState({
+        aqi: aqi,
+        temperature: data.newData.temperature,
+        humidity: data.newData.humidity,
+        hcho: data.newData.hcho,
+        toluene: data.newData.toluene,
+        benzol: data.newData.benzol,
+      })
     })
   }
 
@@ -84,54 +107,106 @@ class App extends React.Component {
     else return 'Good'
   }
 
+  getPlant = (body) => {
+    this.setState({
+      requestOnProcess: true,
+    })
+    console.log("Requestion plant with ", body)
+    axios.post('/api/get-plant', body)
+      .then(res => {
+        this.setState({
+          suggestedPlant: res.data,
+          gotSuggestion: true,
+          requestOnProcess: false,
+        })
+      })
+      .catch(err => {
+        console.log(err)
+        this.setState({
+          requestOnProcess: false,
+        })
+      })
+  }
+
   render() {
-    return (
-      <div className="wrapper">
-        <AppBar>
-          <Toolbar>
-            <IconButton
-              color="inherit"
-              aria-label="Open drawer"
-              onClick={this.handleDrawerToggle}
-            >
-              <MenuIcon />
-            </IconButton>
-            <Typography variant="h6" color="inherit" style={{ flexGrow: 1 }} noWrap>
-              {"AQUA"}
-            </Typography>
-          </Toolbar>
-        </AppBar>
-        <SwipeableViews enableMouseEvents id="carousel" style={{ width: "100%", backgroundColor: "#ededed" }}>
-          <div className="carouselUnit">
-            <div id="meterChart">
-              <ReactSpeedometer minValue={0} maxValue={500} customSegmentStops={[0, 50, 100, 150, 200, 300, 500]} value={this.state.aqi < 500 ? this.state.aqi : 500} segmentColors={["#00E400", "#FEC007", "#FF7E00", "#FF0000", "#8F3F97", "#7E0023"]} />
-            </div>
-            <Typography style={{ marginBottom: 15, marginTop: 15 }}>Current Air Quality</Typography>
-            <Typography style={{ marginBottom: 15, marginTop: 15 }}>{this.getAQStatus()}</Typography>
-            <hr color="white" width="80%" />
-            <Typography style={{ marginBottom: 15, marginTop: 15 }}>{`Temperature: ${this.state.temperature}\u00b0C`}</Typography>
-            <Typography style={{ marginBottom: 15, marginTop: 15 }}>{`Humidity: ${this.state.humidity}%`}</Typography>
-          </div>
-          <div className="carouselUnit">
-            <div id="lineChart">
-              <VictoryChart
-                theme={VictoryTheme.material}
-                domainPadding={20}
+    if (this.state.initialRequestOnProcess) {
+      return (
+        <div style={{ display: "flex", justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+          <CircularProgress color="primary" />
+        </div>
+      )
+    }
+    else {
+      return (
+        <div className="wrapper">
+          <AppBar>
+            <Toolbar>
+              <IconButton
+                color="inherit"
+                aria-label="Open drawer"
+                onClick={this.handleDrawerToggle}
               >
-                <VictoryAxis dependentAxis />
-                <VictoryAxis />
-                <VictoryBar
-                  style={{ data: { fill: this.getBarColor } }}
-                  data={this.state.dataHistory}
-                  x="time"
-                  y="aqi"
-                />
-              </VictoryChart>
+                <MenuIcon />
+              </IconButton>
+              <Typography variant="h6" color="inherit" style={{ flexGrow: 1 }} noWrap>
+                {"AQUA"}
+              </Typography>
+              <Link href="/leaderboard"><Button variant="outlined" style={{ borderColor: 'white', color: 'white' }}>Leaderboard</Button></Link>
+            </Toolbar>
+          </AppBar>
+          <SwipeableViews enableMouseEvents id="carousel" style={{ width: "100%", backgroundColor: "#ededed", marginBottom: 20 }}>
+            <div className="carouselUnit">
+              <div id="meterChart">
+                <ReactSpeedometer minValue={0} maxValue={500} customSegmentStops={[0, 50, 100, 150, 200, 300, 500]} value={Number(this.state.aqi) < 500 ? Number(this.state.aqi) : 500} segmentColors={["#00E400", "#FEC007", "#FF7E00", "#FF0000", "#8F3F97", "#7E0023"]} />
+              </div>
+              <Typography style={{ marginBottom: 15, marginTop: 15 }}>Current Air Quality</Typography>
+              <Typography style={{ marginBottom: 15, marginTop: 15 }}>{this.getAQStatus()}</Typography>
+              <hr color="white" width="80%" />
+              <Typography style={{ marginBottom: 15, marginTop: 15 }}>{`Temperature: ${this.state.temperature}\u00b0C`}</Typography>
+              <Typography style={{ marginBottom: 15, marginTop: 15 }}>{`Humidity: ${this.state.humidity}%`}</Typography>
             </div>
-            <Typography style={{ marginBottom: 30 }}>Hourly Air Quality</Typography>
-          </div>
-        </SwipeableViews>
-        <style jsx>{`
+            <div className="carouselUnit">
+              <div id="lineChart">
+                <VictoryChart
+                  theme={VictoryTheme.material}
+                  domainPadding={20}
+                >
+                  {/* <VictoryLegend x={0} y={0}
+                    title="Legend"
+                    centerTitle
+                    orientation="vertical"
+                    gutter={20}           
+                    width={30}
+                    style={{ border: { stroke: "black" }, title: { fontSize: 20 } }}
+                    data={[
+                      { name: "Good", symbol: { fill: "#00E400" } },
+                      { name: "Moderate", symbol: { fill: "#FEC007" } },
+                      { name: "Unhealthy for Sensitive Groups", symbol: { fill: "#FF7E00" } },
+                      { name: "Unhealthy", symbol: { fill: "#FF0000" } },
+                      { name: "Very Unhealthy", symbol: { fill: "#8F3F97" } },
+                      { name: "Hazardous", symbol: { fill: "#7E0023" } },
+                    ]}
+                  /> */}
+                  <VictoryAxis dependentAxis />
+                  <VictoryAxis />
+                  <VictoryBar
+                    style={{ data: { fill: this.getBarColor } }}
+                    data={this.state.dataHistory}
+                    x="time"
+                    y="aqi"
+                  />
+                </VictoryChart>
+              </div>
+              <Typography style={{ marginBottom: 30 }}>Hourly Air Quality</Typography>
+            </div>
+          </SwipeableViews>
+          {this.state.requestOnProcess ? <CircularProgress color="primary" /> : this.state.gotSuggestion ?
+            <Suggestions plant={this.state.suggestedPlant} /> :
+            this.state.aqi > 50 ?
+              <Questionnaire getPlant={this.getPlant} /> :
+              <div id="okCard"><Typography variant="overline">It's all good!</Typography></div>
+          }
+          <style jsx>{`
           .wrapper{
             margin-top: 70px;
             display: flex;
@@ -150,6 +225,7 @@ class App extends React.Component {
             width: 30%;
           }
           #meterChart {
+            marginTop: 30px;
             height: 200px !important;
           }
           hr {
@@ -160,19 +236,28 @@ class App extends React.Component {
             background-image: -ms-linear-gradient(left, #f0f0f0, #8c8b8b, #f0f0f0);
             background-image: -o-linear-gradient(left, #f0f0f0, #8c8b8b, #f0f0f0); 
           }
+          #okCard {
+            margin-top: 20px;
+            width: 90%;
+            padding: 20px 10px;
+            text-align: center;
+            border-radius: 5px;
+            box-shadow: 0 0 5px 0 #00E676;
+          }
           @media screen and (max-width: 900px) {
             #lineChart {
               width: 100%;
             } 
           }
         `}</style>
-        <style global jsx>{`
+          <style global jsx>{`
           body {
             margin: 0;
           }
         `}</style>
-      </div>
-    )
+        </div>
+      )
+    }
   }
 }
 

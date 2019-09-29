@@ -42,7 +42,7 @@ function get_info_aqi(agent) {
                 resolve()
             }
             else {
-                agent.add(`The air quality is ${getAQStatus(result.rows[0].aqi)}. The AQI is ${result.rows[0].aqi}.`)
+                agent.add(`The air quality is ${getAQStatus(result.rows[0].aqi)}. The AQI is ${result.rows[0].aqi}. You can check you leaderboard at https://the-aqua.herokuapp.com/leaderboard`)
                 resolve()
             }
         })
