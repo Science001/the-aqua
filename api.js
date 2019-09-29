@@ -1,6 +1,7 @@
 const express = require("express");
 const api = express.Router();
 const crypto = require('crypto');
+const path = require('path')
 
 //Body Parser ------------------------------------------------
 const bodyParser = require('body-parser')
@@ -133,6 +134,10 @@ api.get('/leaderboard', (req, res) => {
       res.send(result.rows)
     }
   })
+})
+
+api.get('/report', (req, res) => {
+  res.sendFile(path.join(__dirname, 'static', 'pdf', 'report.pdf'))
 })
 
 api.use('/dialogflow', require('./dialogflow'))

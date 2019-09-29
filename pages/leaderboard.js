@@ -4,6 +4,7 @@ import TableRow from '@material-ui/core/TableRow'
 import TableHead from '@material-ui/core/TableHead'
 import TableCell from '@material-ui/core/TableCell'
 import TableBody from '@material-ui/core/TableBody'
+import Button from '@material-ui/core/Button'
 import CircularProgress from '@material-ui/core/CircularProgress'
 
 import Drawer from '@material-ui/core/Drawer';
@@ -148,6 +149,7 @@ export default class Leaderboard extends React.Component {
                 ))}
               </TableBody>
             </Table>
+            <Button variant="contained" color="primary" fullWidth onClick={() => window.open("https://the-aqua.herokuapp.com/static/pdf/report.pdf")}>Download your Report</Button>
           </div>
         </div>
       )
