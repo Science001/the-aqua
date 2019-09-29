@@ -20,7 +20,7 @@ import Suggestions from '../components/Suggestions'
 
 import axios from 'axios'
 import { socket } from '../socket'
-import Head from 'next/Head'
+import Head from 'next/head'
 
 class App extends React.Component {
   constructor(props) {
