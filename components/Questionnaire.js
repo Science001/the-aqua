@@ -30,7 +30,7 @@ class Questionnaire extends React.Component {
         return (
             <form className="login-box">
                 <Typography variant="h4" style={{marginBottom: 10}}>Find a Solution</Typography>
-                <Typography variant="caption">Enter the number of patients who felt any of these symptoms today</Typography>
+                <Typography variant="caption">The fields have been autofilled by a patient Report Analysis system. You can do any modifications if you wish.</Typography>
                 <TextField
                     label="Headache"
                     value={this.state.headache}
