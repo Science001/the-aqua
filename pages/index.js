@@ -20,6 +20,7 @@ import Suggestions from '../components/Suggestions'
 
 import axios from 'axios'
 import { socket } from '../socket'
+import Head from 'next/Head'
 
 class App extends React.Component {
   constructor(props) {
@@ -184,6 +185,17 @@ class App extends React.Component {
       )
       return (
         <div className="wrapper">
+          <Head>
+            <script src="https://cdn.onesignal.com/sdks/OneSignalSDK.js" async=""></script>
+            <script>
+              {`var OneSignal = window.OneSignal || [];
+                OneSignal.push(function() {
+                OneSignal.init({
+                  appId: "a53b483a-0e49-4871-bdc5-c224121f6d3c",
+                });
+            });`}
+            </script>
+          </Head>
           <AppBar>
             <Toolbar>
               <IconButton
