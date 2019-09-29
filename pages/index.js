@@ -200,6 +200,7 @@ class App extends React.Component {
               <Typography style={{ marginBottom: 30 }}>Hourly Air Quality</Typography>
             </div>
           </SwipeableViews>
+          <Link href="/chatbot"><Button variant="contained" color="primary" fullWidth style={{marginBottom: '20px'}}>CHAT WITH THE BOT</Button></Link>
           {this.state.requestOnProcess ? <CircularProgress color="primary" /> : this.state.gotSuggestion ?
             <Suggestions plant={this.state.suggestedPlant} /> :
             this.state.aqi > 50 ?
