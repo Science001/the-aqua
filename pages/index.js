@@ -187,8 +187,8 @@ class App extends React.Component {
                       { name: "Hazardous", symbol: { fill: "#7E0023" } },
                     ]}
                   /> */}
-                  <VictoryAxis dependentAxis />
-                  <VictoryAxis />
+                  <VictoryAxis dependentAxis label="AQI"/>
+                  <VictoryAxis label="Time"/>
                   <VictoryBar
                     style={{ data: { fill: this.getBarColor } }}
                     data={this.state.dataHistory}
